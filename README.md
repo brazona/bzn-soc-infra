@@ -88,6 +88,19 @@ __[relação das VM: ]__ As maquinas serão distribuidas da seguinte maneira:
 | 3 | node-2 |
 | 4 | node-3 |
 
+### Configuração Servidor DNS
+
+__[descrição da etapa configuração dns: ]__ O servidor dns é o responsável por direcionar o tráfico das requisição web ao dominío para os servidores definidos da aplicação.
+
+Na arquitetura do sistema __Brazona__ é também existe o componente  __Proxy Reverso__, que irá junto com o servidor dns gerenciar as requisição.
+
+Em um servidor dns crie as duas álias a seguir apontando para os devidos servidores:
+
+| Álias | Servidor |
+| --- | --- |
+| rancher.{{dominio}} | Rancher Server |
+| *.{{dominio}} | node-1, node-2, node-3 |
+
 ### Instalação Rancher Server
 
 __[descrição do processo de instalação do rancher: ]__ Esse é o processo para instalação do aplicativo rancher na maquina virtual.
@@ -113,7 +126,7 @@ Na interface do ranche configure o cluster, no final do processo será disponibi
 
 ``` text
 
-sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.{{dominio}}.site --token n6gmrf2mkbf77fm4w9znfdnfn5gxszrt5jjvn5vpl2q4525r6wn9rh --ca-checksum 9775da6d0427f86dfae6d5e6fc23b81f0f6925180937bc97c93c0cb8a1c88e7b --node-name node-1 --etcd --controlplane --worker
+sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.{{dominio}} --token n6gmrf2mkbf77fm4w9znfdnfn5gxszrt5jjvn5vpl2q4525r6wn9rh --ca-checksum 9775da6d0427f86dfae6d5e6fc23b81f0f6925180937bc97c93c0cb8a1c88e7b --node-name node-1 --etcd --controlplane --worker
 
 ```
 
