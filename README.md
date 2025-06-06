@@ -95,7 +95,7 @@ __[descrição do processo de instalação do rancher: ]__ Esse é o processo pa
 No terminal da maquina destinada para instalar o rancher execute os comandos abaixo:
 
 ```sh
-sudo apt-get -y update &&  sudo apt install -y docker.io && \
+sudo apt-get -y update && sudo apt install -y docker.io && \
 sudo docker run -d --name rancher-server --restart=always -v /opt/rancher:/var/lib/rancher  -p 80:80 -p 443:443 rancher/rancher:v2.4.3
 ```
 
@@ -106,7 +106,7 @@ __[descrição do processo de instalação dos nodes: ]__ Esse é o processo par
 No terminal das maquinas destinada para instalar os nodes execute os comandos abaixo:
 
 ```sh
-sudo apt-get -y update &&  sudo apt install -y docker.io
+sudo apt-get -y update && sudo apt install -y docker.io
 ```
 
 Na interface do ranche configure o cluster, no final do processo será disponibilizado um script shell conforme exemplo abaixo:
