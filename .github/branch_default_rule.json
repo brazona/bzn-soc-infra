@@ -1,0 +1,52 @@
+{
+  "id": 4698123,
+  "name": "branch_default_rule",
+  "target": "branch",
+  "source_type": "Repository",
+  "source": "brazona/soc",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/heads/main",
+        "refs/heads/develop",
+        "refs/heads/releases/**"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false,
+        "automatic_copilot_code_review_enabled": false,
+        "allowed_merge_methods": [
+          "merge",
+          "squash",
+          "rebase"
+        ]
+      }
+    },
+    {
+      "type": "branch_name_pattern",
+      "parameters": {
+        "operator": "starts_with",
+        "pattern": "feature",
+        "negate": false,
+        "name": "A branch deve começar com o padrão gitflow , exemplo: feature/crud_usuario"
+      }
+    }
+  ],
+  "bypass_actors": []
+}
