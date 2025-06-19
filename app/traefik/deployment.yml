@@ -1,9 +1,3 @@
-# Copyright 2024 Brazona Tech
-
-#################################################################################################
-# Detalhe do Serviço
-#################################################################################################
-# Publica Proxy Reverso Traefik no ambiente kubernetes
 ---
 apiVersion: v1
 kind: Service
@@ -25,11 +19,10 @@ metadata:
   namespace: kube-system
 spec:
   rules:
-  - host: traefik.rancher.<dominio>
+  - host: traefik.app.brazona.com.br
     http:
       paths:
       - path: /
         backend:
           serviceName: traefik-web-ui
           servicePort: web
-

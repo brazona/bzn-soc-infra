@@ -1,0 +1,88 @@
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-server
+  namespace: infra
+  labels:
+    app: grafana-server-api
+spec:
+  selector:
+    matchLabels:
+      app: grafana-server-api
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: grafana-server-api
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: grafana-server
+        image: grafana/grafana
+        ports:
+          - name: http-port
+            containerPort: 3000
+        volumeMounts:
+          - name: grafana-vol
+            mountPath: /var/lib/grafana
+      restartPolicy: Always
+      securityContext:
+        runAsUser: 0
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: grafana-vol
+        persistentVolumeClaim:
+          claimName: grafana-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: grafana-server-service
+  namespace: infra
+spec:
+  selector:
+    app: grafana-server-api
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: infra
+  name: grafana-server-ingress
+  annotations:
+    allow.http: "true"
+spec:
+  rules:
+    - host: grafana.exemplo.app.brazona.com.br
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: grafana-server-service
+              servicePort: 80

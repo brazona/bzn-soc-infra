@@ -145,3 +145,45 @@ Execute o script fornecido nas vm destinadas aos nodes-rancher.
 > *O código fonte neste projeto não possui licença de uso.*
 
 É terminantemente proibido reproduzir, distribuir, alterar, utilizar engenharia reversa ou valer-se de qualquer tentativa de reverter ao seu código-fonte qualquer dos componentes que compõem o SOFTWARE, bem como utilizar subterfúgios para burlar a quantidade de usuários licenciados.
+
+########### RASCUNHO #########
+
+Instalação do servidor __RANCHER__
+
+```bash
+sudo apt-get -y update && sudo apt install -y docker.io && \
+sudo docker run -d --name rancher-server --restart=always -v /opt/rancher:/var/lib/rancher  -p 80:80 -p 443:443 --privileged rancher/rancher:latest
+```
+
+Pegar Id COntainer
+
+```bash
+sudo docker container ls
+```
+
+Pegar senha de instalação:
+
+```bash
+sudo docker logs container-id  2>&1 | grep "Bootstrap Password:"
+```
+
+
+
+
+Instalação __NODES__ :
+
+Instalação Docker:
+
+```bash
+sudo apt-get -y update && sudo apt install -y docker.io
+```
+
+Instalação Agente Rancher:
+
+Exemplo do comando:
+
+``` text
+
+sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.{{dominio}} --token n6gmrf2mkbf77fm4w9znfdnfn5gxszrt5jjvn5vpl2q4525r6wn9rh --ca-checksum 9775da6d0427f86dfae6d5e6fc23b81f0f6925180937bc97c93c0cb8a1c88e7b --node-name node-1 --etcd --controlplane --worker
+
+```

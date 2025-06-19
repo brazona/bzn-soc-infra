@@ -1,0 +1,88 @@
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zipkin-pvc
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkin-server
+  namespace: infra
+  labels:
+    app: zipkin-server-api
+spec:
+  selector:
+    matchLabels:
+      app: zipkin-server-api
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: zipkin-server-api
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: zipkin-server
+        image: openzipkin/zipkin
+        ports:
+          - name: http-port
+            containerPort: 9411
+        volumeMounts:
+          - name: zipkin-vol
+            mountPath: /var/lib/zipkin
+      restartPolicy: Always
+      securityContext:
+        runAsUser: 0
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: zipkin-vol
+        persistentVolumeClaim:
+          claimName: zipkin-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: zipkin-server-service
+  namespace: infra
+spec:
+  selector:
+    app: zipkin-server-api
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9411
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: infra
+  name: zipkin-server-ingress
+  annotations:
+    allow.http: "true"
+spec:
+  rules:
+    - host: zipkin.exemplo.app.brazona.com.br
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: zipkin-server-service
+              servicePort: 80
