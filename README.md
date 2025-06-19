@@ -1,10 +1,30 @@
-# SERVIÇO DE ORQUESTRAÇÃO DE CONTEINERS [ SOC ]
+# ORQUESTRAÇÃO DE CONTAINERS [ SOC ]
 
 __[descrição do repositório: ]__ Projeto que gerencia as informações de implementação e configuração do orquestrador de containers docker.
 
-## BANCH X AMBIENTE
+## Identificadores da Aplicação
 
-__[descrição da relação das branch para o ambiente da aplicação: ]__ Essa relação indica qual será o ambiente alvo a depender da branch do versionamento.
+| Sigla | Descrição do Projeto | Nome Aplicativo |
+| --- | --- | --- |
+| SOC | Serviço de Orquestração de Conteiners | bzn-soc-infra |
+
+__[relação das versões de aplicativos externos: ]__ A aplicação utiliza as seguintes versões:
+
+| Software | Versão |
+| --- | --- |
+| Ubuntu | 16.04 LTS |
+| Docker | 18.09.7 |
+| Rancher | 2.4.3|
+| Traefik | 1.7 |
+| Longhorn | 0.8.0 |
+
+## Pre Requisitos
+
+- 4 máquinas virtuais com 2/4 processadores e 6/8 gb de memória ram
+- 1 domínio
+- Sistema operacional Ubuntu 16.04 LTS
+
+## Tabela Branch x Ambiente
 
 | Branch | Ambiente |
 | --- | --- |
@@ -13,131 +33,110 @@ __[descrição da relação das branch para o ambiente da aplicação: ]__ Essa 
 | pre-release/** | Aplica no ambiente __STG__ |
 | main | Aplica no ambiente __PRD__ |
 
-## ESTRUTURA DO PROJETO
+## Estrutura do projeto
 
-__[descrição da estrutura do diretório: ]__ Essa estrutura descreve quais são os diretórios do projeto.
+__[descrição da estrutura do diretório: ]__
 
 ``` text
 
 ├── .github
-│   └── workflows
-│       └── script
-│           └── manifest.sh
-│       └── namespace.yml
-│       └── secrets.yml
-│   └── branch_default_rule.json
-│   └── dependabot.yml
-│   └── tag_default_rule.json
+│    └── branch_ruleset.yml
+│    └── dependabot.yml
 ├── app
+│   └── exemplo
+│       └── grafana
+│           └── deployment.yml
+│       └── zipkin
+│           └── deployment.yml
 │   └── namespace
 │       └── deployment.yml
-│   └── secrets
+│   └── traefik
 │       └── deployment.yml
 ├── docs
 │   └── CONTRIBUTING.md
 │   └── CODE_OF_CONDUCT.md
 │   └── PULL_REQUEST_TEMPLATE.md
+│   └── SECURITY.md
+└── .gitignore
 └── README.md
 ```
 
-## INTRODUÇÃO
+## Rancher
 
-__[descrição da visão geral do projeto: ]__ Esse projeto tem a finalidade de documentar e padronizar o processo de instalação e configuração do servidor de gerenciamento a implementação, manutenção dos containers utilizados pelas aplicações.
+Nessa etapa será instalado e configurado o software rancher para gerenciamento dos containers e cluster.
 
-### Kubernetes
+### Rancher Server: DNS
 
-__[descrição do aplicativo: ]__ Segundo o site oficial da aplicação, o kubernetes é um gerenciador de implementação e configuração de containers baseado num estrutura declarativa através de um arquivo contendo as informações necessárias do container, proporcionando o versionamento da instalação, configuração e manutenção além da possibilidade de automatização.
+Crie uma vm cloud conforme definido nos requisitos, nomei como __rancher-server__  e atribua um subconjunto de dns __rancher.${dominio.com.br}__ para o ip publico dela.
 
-### Rancher
+### Rancher Server: INSTALAÇÃO
 
-__[descrição do aplicativo: ]__ Segundo o site oficial da aplicação, o rancher é um software livre que administra os clusters kubernetes, fornece uma interface para o usuário administrar os clusters.
+Acesse o terminal da vm destinada ao rancher server, e execute os comandos abaixos:
 
-### Versões
-
-__[relação das versões de aplicativos externos: ]__ A aplicação utiliza as seguintes versões:
-
-| Software | Versão |
-| --- | --- |
-| Ubuntu | 24.04 |
-| Docker | 27.5.1 |
-| Rancher | 2.4.3 |
-| Traefik | 1.7 |
-| Longhorn | 0.8 |
-
-### Requisitos
-
-__[Relação dos requisitos necessários para concluir o tutorial: ]__ Os requisitos para prosseguir com a instalação e configuração são esses:
-
-| Item | Descrição | Observação |
-| --- | --- | --- |
-| 1 | 4 máquinas virtuais com 2/4 processadores e 6/8 gb de memória ram | Numa hospedagem cloud de preferência com a instalção do SO Ubuntu 24.04|
-| 2 | 1 domínio  | Devidamente configurado num serviço de Hospedagem DNS |
-
-## INSTALAÇÃO
-
-__[descrição da etapa instalação: ]__ Nessa seção é descrito as etapas necessárias para implentar a aplicação.
-
-### Estrutura das Maquinas Virtuais [ VM ]
-
-__[relação das VM: ]__ As maquinas serão distribuidas da seguinte maneira:
-
-| Item | Descrição |
-| --- | --- |
-| 1 | Rancher Server |
-| 2 | node-1 |
-| 3 | node-2 |
-| 4 | node-3 |
-
-### Configuração Servidor DNS
-
-__[descrição da etapa configuração dns: ]__ O servidor dns é o responsável por direcionar o tráfico das requisição web ao dominío para os servidores definidos da aplicação.
-
-Na arquitetura do sistema __Brazona__ é também existe o componente  __Proxy Reverso__, que irá junto com o servidor dns gerenciar as requisição.
-
-Em um servidor dns crie as duas álias a seguir apontando para os devidos servidores:
-
-| Álias | Servidor |
-| --- | --- |
-| rancher.{{dominio}} | Rancher Server |
-| *.{{dominio}} | node-1, node-2, node-3 |
-
-### Instalação Rancher Server
-
-__[descrição do processo de instalação do rancher: ]__ Esse é o processo para instalação do aplicativo rancher na maquina virtual.
-
-No terminal da maquina destinada para instalar o rancher execute os comandos abaixo:
-
-```sh
+```bash
 sudo apt-get -y update && sudo apt install -y docker.io && \
-sudo docker run -d --name rancher-server --restart=always -v /opt/rancher:/var/lib/rancher  -p 80:80 -p 443:443 rancher/rancher:v2.4.3
+sudo docker run -d --name rancher-server --restart=always -v /opt/rancher:/var/lib/rancher  -p 80:80 -p 443:443 --privileged rancher/rancher:v2.4.3
 ```
 
-### Instalação Node
+Através do dns __rancher.${dominio.com.br}__ acesse a interface gráfica da aplicação e configure os seguintes passos:
 
-__[descrição do processo de instalação dos nodes: ]__ Esse é o processo para instalação do aplicativo node-rancher nas maquinas virtuais.
+- Cluster: Crie um cluster conforme exemplificado no video: </br> ![alt-text](./app/assets/screen-capture-rancher-cluster.gif)
 
-No terminal das maquinas destinada para instalar os nodes execute os comandos abaixo:
+Ao final do processo será disponibilizado um comando bash como exemplo abaixo: 
 
-```sh
+```bash
+sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.${dominio.com.br}--token kmpngnhs78rcvspfb6qmtlsfzl2hpn2g2fjwftp7hzn4rwldx9hqtw --ca-checksum 60cbc91998948d56ff92b7dd999c759e8671597b1ee22541a152f12dda4de0a6 --node-name node-1 --etcd --controlplane --worker
+```
+
+### Rancher Node: DNS
+
+Crie três vm cloud conforme definido nos requisitos, nomei como __node-1, node-2 e node-3__  e atribua um subconjunto de dns __*.app.${dominio.com.br}__ para o ip publico delas.
+
+### Rancher Node: INSTALAÇÃO
+
+Acesse o terminal das três vm destinada ao node, e execute os comandos abaixos conforme exemplificado no video a seguir: </br> ![alt-text](./app/assets/screen-capture-rancher-nodes.gif)
+
+```bash
 sudo apt-get -y update && sudo apt install -y docker.io
 ```
 
-Na interface do ranche configure o cluster, no final do processo será disponibilizado um script shell conforme exemplo abaixo:
+> Somente exemplo:
 
-``` text
-
-sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.{{dominio}} --token n6gmrf2mkbf77fm4w9znfdnfn5gxszrt5jjvn5vpl2q4525r6wn9rh --ca-checksum 9775da6d0427f86dfae6d5e6fc23b81f0f6925180937bc97c93c0cb8a1c88e7b --node-name node-1 --etcd --controlplane --worker
-
+```bash
+sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.${dominio.com.br} --token kmpngnhs78rcvspfb6qmtlsfzl2hpn2g2fjwftp7hzn4rwldx9hqtw --ca-checksum 60cbc91998948d56ff92b7dd999c759e8671597b1ee22541a152f12dda4de0a6 --node-name node-1 --etcd --controlplane --worker
 ```
 
-Execute o script fornecido nas vm destinadas aos nodes-rancher.
+### Rancher Server: CONFIGURAÇÃO
 
-## Referência
+Através do dns __rancher.${dominio.com.br}__ acesse a interface gráfica da aplicação e configure os seguintes passos:
 
-- [Documentação Kubernetes](https://kubernetes.io/pt-br/docs/concepts/overview/)
-- [Documentação Rancher](https://rancher.com/docs/)
-- [Documentação Traefik](https://doc.traefik.io/traefik/)
-- [Documentação Longhorn](https://longhorn.io/)
+### Rancher Server: CONFIGURAÇÃO/NAMESPACE
+
+Através da interface gráfica do rancher server selecione o manifesto yml desse repositório disponível no diretório: </br> [./app/namespace/deployment.yml](./app/namespace/deployment.yml), conforme exemplo do video a seguir: </br> ![alt-text](./app/assets/screen-capture-rancher-cluster-namespace.gif)
+
+### Rancher Server: CONFIGURAÇÃO/TRAEFIK
+
+Através da interface gráfica do rancher server execute o comando a seguir:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/traefik-rbac.yaml && \
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/traefik-ds.yaml
+```
+
+Ainda na interface e após o termino da execução, selecione o manifesto yml desse repositório disponível no diretório: </br> [./app/traefik/deployment.yml](./app/traefik/deployment.yml), conforme exemplo do video a seguir: </br> ![alt-text](./app/assets/screen-capture-rancher-cluster-traefik.gif)
+
+### Rancher Server: CONFIGURAÇÃO/LONGHORN
+
+selecione ${cluester}/System/Apps e clique em Launch e instale o app LONGHORN v0.8.0, conforme video exemplificado a seguir:
+
+</br> ![alt-text](./app/assets/screen-capture-rancher-cluster-longhorn.gif)
+
+### Rancher Server: EXEMPLO
+
+Para validar a instalação e configuração do Rancher publique através da interface gráfica os manifesto xxx e xxx desse repositório disponíveis no diretório xxx e xxx, os aplicativos devem estar disponíveis nas url abaixo:
+
+- [http://zipkin.exemplo.app.brazona.com.br/](http://zipkin.exemplo.app.brazona.com.br/)
+- [http://grafana.exemplo.app.brazona.com.br/](http://grafana.exemplo.app.brazona.com.br/)
 
 ## Licença
 
@@ -145,45 +144,3 @@ Execute o script fornecido nas vm destinadas aos nodes-rancher.
 > *O código fonte neste projeto não possui licença de uso.*
 
 É terminantemente proibido reproduzir, distribuir, alterar, utilizar engenharia reversa ou valer-se de qualquer tentativa de reverter ao seu código-fonte qualquer dos componentes que compõem o SOFTWARE, bem como utilizar subterfúgios para burlar a quantidade de usuários licenciados.
-
-########### RASCUNHO #########
-
-Instalação do servidor __RANCHER__
-
-```bash
-sudo apt-get -y update && sudo apt install -y docker.io && \
-sudo docker run -d --name rancher-server --restart=always -v /opt/rancher:/var/lib/rancher  -p 80:80 -p 443:443 --privileged rancher/rancher:latest
-```
-
-Pegar Id COntainer
-
-```bash
-sudo docker container ls
-```
-
-Pegar senha de instalação:
-
-```bash
-sudo docker logs container-id  2>&1 | grep "Bootstrap Password:"
-```
-
-
-
-
-Instalação __NODES__ :
-
-Instalação Docker:
-
-```bash
-sudo apt-get -y update && sudo apt install -y docker.io
-```
-
-Instalação Agente Rancher:
-
-Exemplo do comando:
-
-``` text
-
-sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.4.3 --server https://rancher.{{dominio}} --token n6gmrf2mkbf77fm4w9znfdnfn5gxszrt5jjvn5vpl2q4525r6wn9rh --ca-checksum 9775da6d0427f86dfae6d5e6fc23b81f0f6925180937bc97c93c0cb8a1c88e7b --node-name node-1 --etcd --controlplane --worker
-
-```
