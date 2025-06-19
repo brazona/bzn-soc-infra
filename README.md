@@ -69,6 +69,8 @@ Nessa etapa será instalado e configurado o software rancher para gerenciamento 
 
 Crie uma vm cloud conforme definido nos requisitos, nomei como __rancher-server__  e atribua um subconjunto de dns __rancher.${dominio.com.br}__ para o ip publico dela.
 
+</br> ![alt-text](./app/assets/screen-capture-criar-vm.gif)
+
 ### Rancher Server: INSTALAÇÃO
 
 Acesse o terminal da vm destinada ao rancher server, e execute os comandos abaixos:
@@ -94,7 +96,7 @@ Crie três vm cloud conforme definido nos requisitos, nomei como __node-1, node-
 
 ### Rancher Node: INSTALAÇÃO
 
-Acesse o terminal das três vm destinada ao node, e execute os comandos abaixos conforme exemplificado no video a seguir: </br> ![alt-text](./app/assets/screen-capture-rancher-nodes.gif)
+Acesse o terminal das três vm destinada ao node, e execute os comandos abaixos conforme exemplificado no video a seguir: </br> ![alt-text](./app/assets/screen-capture-rancher-cluster.gif)
 
 ```bash
 sudo apt-get -y update && sudo apt install -y docker.io
@@ -127,16 +129,19 @@ Ainda na interface e após o termino da execução, selecione o manifesto yml de
 
 ### Rancher Server: CONFIGURAÇÃO/LONGHORN
 
-selecione ${cluester}/System/Apps e clique em Launch e instale o app LONGHORN v0.8.0, conforme video exemplificado a seguir:
+selecione ${cluster}/System/Apps e clique em Launch e instale o app LONGHORN v0.8.0, conforme video exemplificado a seguir:
 
 </br> ![alt-text](./app/assets/screen-capture-rancher-cluster-longhorn.gif)
 
 ### Rancher Server: EXEMPLO
 
-Para validar a instalação e configuração do Rancher publique através da interface gráfica os manifesto xxx e xxx desse repositório disponíveis no diretório xxx e xxx, os aplicativos devem estar disponíveis nas url abaixo:
+Para validar a instalação e configuração do Rancher publique através da interface gráfica os manifesto grafana/deployment.yml e zipkin/deployment.yml desse repositório, os aplicativos devem estar disponíveis nas url abaixo:
 
 - [http://zipkin.exemplo.app.brazona.com.br/](http://zipkin.exemplo.app.brazona.com.br/)
 - [http://grafana.exemplo.app.brazona.com.br/](http://grafana.exemplo.app.brazona.com.br/)
+
+Para mais informações consulte o video a seguir, exemplificando a publicação dos aplicativos: </br> ![alt-text](./app/assets/screen-capture-rancher-cluster-exemplo.gif)
+
 
 ## Licença
 
